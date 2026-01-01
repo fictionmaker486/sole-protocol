@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '@/supabaseClient'; // 指向 src/supabaseClient.ts
+import { supabase } from '@/supabaseclient';
 
 export default function MissionList({ agentId }: { agentId: string }) {
   const [missions, setMissions] = useState<any[]>([]);
