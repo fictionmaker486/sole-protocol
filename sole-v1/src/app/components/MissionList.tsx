@@ -36,7 +36,7 @@ export default function MissionList(props: { agentId: string }) {
       return;
     }
 
-    // 2. 自動增加 Credibility Score (每次完成加 10 分)
+    // 2. 自動增加 Credibility Score (每次完成任務加 10 分)
     const { data: profileData } = await supabase
       .from('profiles')
       .select('credibility_score')
@@ -44,6 +44,7 @@ export default function MissionList(props: { agentId: string }) {
       .single();
 
     if (profileData) {
+      // 確保最高分數不超過 100
       const newScore = Math.min((profileData.credibility_score || 0) + 10, 100);
       
       const { error: profileError } = await supabase
@@ -55,7 +56,7 @@ export default function MissionList(props: { agentId: string }) {
         console.error("分數更新失敗:", profileError.message);
       } else {
         alert(`任務回報成功！特務信譽分數已提升至 ${newScore}！`);
-        // 成功後重新整理網頁，讓全頁資料同步
+        // 成功後強制重新整理網頁，讓全頁資料同步更新
         window.location.reload(); 
       }
     }

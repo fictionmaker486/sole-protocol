@@ -70,7 +70,7 @@ export default function Home() {
     }
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center font-mono">AUTHENTICATING...</div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center font-mono uppercase tracking-widest bg-gray-50 text-black">Authenticating...</div>;
 
   return (
     <main className="min-h-screen bg-gray-50 text-black p-6 md:p-12 font-mono">
