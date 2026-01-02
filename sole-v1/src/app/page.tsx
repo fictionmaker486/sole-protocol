@@ -1,7 +1,7 @@
 "use client";
-
+import MissionList from './components/MissionList';
 import { useState, useEffect } from "react";
-import { supabase } from "../../lib/supabaseClient";
+import { supabase } from "./supabaseClient";
 
 export default function Home() {
   // --- 狀態管理區 ---
@@ -225,6 +225,13 @@ export default function Home() {
                   {profile.credibility_score} <span className="text-xs text-gray-400 font-normal">/ 100</span>
                 </span>
               </div>
+              // ... 前後的程式碼 (約在 227 行附近)
+    </div>
+  </div>
+
+  {/* 移除原本的註解括號，直接放置組件 */}
+<MissionList agentId={profile.id} />
+</div>
             </div>
           ))}
         </div>

@@ -1,4 +1,7 @@
+"use client"; // 加入這一行
+
 import { useEffect, useState } from 'react';
+// ...其餘代碼
 import { supabase } from '@/supabaseClient';
 
 export default function MissionList({ agentId }: { agentId: string }) {
