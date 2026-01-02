@@ -25,16 +25,39 @@ export default function MissionList(props: { agentId: string }) {
   }
 
   async function updateMission(missionId: string) {
-    const { error } = await supabase
+    // 1. 更新任務狀態為 COMPLETED
+    const { error: missionError } = await supabase
       .from('missions')
       .update({ status: 'COMPLETED' })
       .eq('id', missionId);
 
-    if (error) {
-      alert("傳輸失敗！錯誤碼: " + error.code + "\n訊息: " + error.message);
-    } else {
-      alert("任務回報成功，特務信譽已提升！");
-      setMissions(missions.map(m => m.id === missionId ? { ...m, status: 'COMPLETED' } : m));
+    if (missionError) {
+      alert("任務更新失敗: " + missionError.message);
+      return;
+    }
+
+    // 2. 自動增加 Credibility Score (每次完成加 10 分)
+    const { data: profileData } = await supabase
+      .from('profiles')
+      .select('credibility_score')
+      .eq('id', agentId)
+      .single();
+
+    if (profileData) {
+      const newScore = Math.min((profileData.credibility_score || 0) + 10, 100);
+      
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ credibility_score: newScore })
+        .eq('id', agentId);
+
+      if (profileError) {
+        console.error("分數更新失敗:", profileError.message);
+      } else {
+        alert(`任務回報成功！特務信譽分數已提升至 ${newScore}！`);
+        // 成功後重新整理網頁，讓全頁資料同步
+        window.location.reload(); 
+      }
     }
   }
 
