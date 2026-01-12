@@ -2,50 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 基礎變數設定 */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 249, 250, 251; /* gray-50 */
-  --background-end-rgb: 249, 250, 251;
+  --background: #f9fafb;
+  --foreground: #111827;
 }
 
 @layer base {
   body {
-    color: rgb(var(--foreground-rgb));
-    background: rgb(var(--background-start-rgb));
-    /* 優化字體：優先讀取 Inter 與 繁體中文 Noto Sans TC */
+    background-color: var(--background);
+    color: var(--foreground);
+    /* 注入 Inter 與 繁體中文字體，確保跨平台一致性 */
     font-family: 'Inter', 'Noto Sans TC', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-
-  /* 移除 Chrome/Safari 的輸入框黃色自動填充背景，保持硬派風格 */
-  input:-webkit-autofill,
-  input:-webkit-autofill:hover, 
-  input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0px 1000px white inset;
-    transition: background-color 5000s ease-in-out 0s;
-  }
 }
 
-@layer components {
-  /* 如果未來想要重複使用這種黑邊框風格，可以定義在這邊 */
-  .neo-border {
-    @apply border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)];
-  }
+/* 特務風格自定義動畫：黃色光暈脈衝 */
+@keyframes agent-pulse {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.05); }
 }
 
-/* 自定義動畫：特務風格的呼吸燈光暈 */
-@keyframes pulse-yellow {
-  0%, 100% { opacity: 0.15; transform: scale(1); }
-  50% { opacity: 0.3; transform: scale(1.05); }
+.animate-pulse-yellow {
+  animation: agent-pulse 3s infinite ease-in-out;
 }
 
-.animate-agent-pulse {
-  animation: pulse-yellow 3s infinite ease-in-out;
+/* 強化 Neo-Brutalism 硬派邊框樣式 */
+.neo-shadow {
+  box-shadow: 16px 16px 0px 0px rgba(0, 0, 0, 1);
 }
 
-/* 針對繁體中文排版的微調 */
-:lang(zh-TW) {
-  word-break: break-all;
-  line-height: 1.6;
+/* 修正輸入框自動填充時的白色背景 */
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px white inset !important;
 }
