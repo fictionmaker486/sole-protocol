@@ -141,7 +141,7 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
         </div>
 
         {user && (
-          <button onClick={handleLogout} className="text-xs font-bold underline hover:text-red-600 transition-colors">
+          <button onClick={handleLogout} className="text-xs font-bold underline hover:text-red-600 transition-colors uppercase">
             {dict.STVS?.btn_logout || "DISCONNECT"}
           </button>
         )}
@@ -149,65 +149,125 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
 
       {/* 內容區：身分驗證 / 特務儀表板 */}
       {!user ? (
+        /* 未登入：美化後的登入介面 */
         <div className="max-w-md mx-auto mt-20 relative">
           <div className="absolute -inset-4 bg-yellow-400/20 blur-xl animate-pulse -z-10"></div>
           <div className="bg-white border-[6px] border-black p-8 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden text-center">
+            <div className="absolute top-0 left-0 w-full h-2 bg-black flex">
+              <div className="w-1/3 h-full bg-red-600 animate-pulse"></div>
+            </div>
             <h2 className="text-xl font-black mb-8 bg-black text-white py-3 px-4 italic uppercase tracking-[0.3em]">
               {isSignUp ? (dict.STVS?.signup || "SIGNUP") : (dict.STVS?.login || "LOGIN")}
             </h2>
             <form onSubmit={handleAuth} className="space-y-6">
-              <input 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                required 
-                className="w-full border-4 border-black p-4 outline-none font-bold focus:bg-yellow-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" 
-                placeholder={dict.STVS?.email || "AGENT EMAIL"} 
-              />
-              <input 
-                type="password" 
-                value={password} 
-                onChange={(e) => setPassword(e.target.value)} 
-                required 
-                className="w-full border-4 border-black p-4 outline-none font-bold focus:bg-yellow-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" 
-                placeholder={dict.STVS?.password || "PASSCODE"} 
-              />
-              {msg && <div className="text-[10px] p-3 bg-red-100 border-2 border-red-600 font-bold text-red-600">[ERROR]: {msg}</div>}
-              <button type="submit" className="w-full bg-black text-white font-black py-5 text-lg hover:bg-red-600 transition-all shadow-[8px_8px_0px_0px_rgba(220,38,38,0.5)] uppercase tracking-widest">
+              <div className="group text-left">
+                <label className="text-[10px] font-black uppercase mb-1 block tracking-widest text-gray-400 group-focus-within:text-black transition-colors">
+                  {dict.STVS?.email || "AGENT EMAIL"}
+                </label>
+                <input 
+                  type="email" 
+                  value={email} 
+                  onChange={(e) => setEmail(e.target.value)} 
+                  required 
+                  className="w-full border-4 border-black p-4 outline-none font-bold focus:bg-yellow-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors" 
+                  placeholder="AGENT@SOLE.PROTOCOL" 
+                />
+              </div>
+
+              <div className="group text-left">
+                <label className="text-[10px] font-black uppercase mb-1 block tracking-widest text-gray-400 group-focus-within:text-black transition-colors">
+                  {dict.STVS?.password || "PASSCODE"}
+                </label>
+                <input 
+                  type="password" 
+                  value={password} 
+                  onChange={(e) => setPassword(e.target.value)} 
+                  required 
+                  className="w-full border-4 border-black p-4 outline-none font-bold focus:bg-yellow-50 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-colors" 
+                  placeholder="********" 
+                />
+              </div>
+
+              {msg && (
+                <div className="text-[10px] p-3 bg-red-100 border-2 border-red-600 font-bold text-red-600 text-left">
+                  [SYSTEM ERROR]: {msg}
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                className="w-full bg-black text-white font-black py-5 text-lg hover:bg-red-600 transition-all shadow-[8px_8px_0px_0px_rgba(220,38,38,0.5)] uppercase tracking-widest"
+              >
                 {isSignUp ? (dict.STVS?.btn_signup || "INITIALIZE") : (dict.STVS?.btn_login || "EXECUTE")}
               </button>
             </form>
-            <button onClick={() => setIsSignUp(!isSignUp)} className="mt-8 w-full text-center text-[10px] font-black underline uppercase tracking-widest">
+            <button 
+              onClick={() => setIsSignUp(!isSignUp)} 
+              className="mt-8 w-full text-center text-[10px] font-black underline uppercase tracking-widest hover:text-red-600 transition-colors"
+            >
               {isSignUp ? (dict.STVS?.switch_to_login) : (dict.STVS?.switch_to_signup)}
             </button>
           </div>
         </div>
       ) : (
+        /* 已登入：特務儀表板 */
         <div className="max-w-2xl mx-auto space-y-12">
           {profiles.map((profile) => (
             <div key={profile.id} className="space-y-10 text-left">
-              <div className="bg-white border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative">
+              {/* 特務名片 */}
+              <div className="bg-white border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] relative transition-transform hover:translate-x-[-2px] hover:translate-y-[-2px]">
                 <div className="absolute top-4 right-4">
                   {editingId === profile.id ? (
-                    <button onClick={() => saveProfile(profile.id)} className="bg-black text-white px-3 py-1 text-xs">SAVE</button>
+                    <button 
+                      onClick={() => saveProfile(profile.id)} 
+                      className="bg-black text-white px-3 py-1 text-xs font-bold hover:bg-red-600 transition-colors"
+                    >
+                      SAVE
+                    </button>
                   ) : (
-                    <button onClick={() => { setEditingId(profile.id); setTempName(profile.full_name); }} className="text-xs underline font-bold">EDIT</button>
+                    <button 
+                      onClick={() => { setEditingId(profile.id); setTempName(profile.full_name); }} 
+                      className="text-xs underline font-bold hover:text-red-600 transition-colors"
+                    >
+                      EDIT
+                    </button>
                   )}
                 </div>
-                <span className="bg-black text-white text-[10px] px-2 py-1 font-bold uppercase tracking-widest">Authorized Operative</span>
+                
+                <span className="bg-black text-white text-[10px] px-2 py-1 font-bold uppercase tracking-widest">
+                  Authorized Operative
+                </span>
+
                 <div className="mt-6">
-                  <span className="text-gray-400 text-[10px] font-bold block uppercase italic tracking-tighter">Operative Name:</span>
+                  <span className="text-gray-400 text-[10px] font-bold block uppercase italic tracking-tighter">
+                    Operative Name:
+                  </span>
                   {editingId === profile.id ? (
-                    <input type="text" value={tempName} onChange={(e) => setTempName(e.target.value)} className="text-4xl font-black w-full border-b-2 border-black outline-none bg-transparent" autoFocus />
+                    <input 
+                      type="text" 
+                      value={tempName} 
+                      onChange={(e) => setTempName(e.target.value)} 
+                      className="text-4xl font-black w-full border-b-4 border-black outline-none bg-yellow-50 px-2" 
+                      autoFocus 
+                    />
                   ) : (
-                    <h3 className="text-4xl font-black uppercase tracking-tighter leading-none">{profile.full_name}</h3>
+                    <h3 className="text-4xl font-black uppercase tracking-tighter leading-none">
+                      {profile.full_name}
+                    </h3>
                   )}
                 </div>
+
                 <div className="mt-8 border-t-2 border-gray-100 pt-4 flex justify-between items-center">
-                  <span className="text-gray-500 italic text-sm">{dict.STVS?.score_label || "Credibility Score"}:</span>
-                  <span className="font-bold text-2xl">{profile.credibility_score} <span className="text-gray-400 font-normal text-xs">/ 100</span></span>
+                  <span className="text-gray-500 italic text-sm">
+                    {dict.STVS?.score_label || "Credibility Score"}:
+                  </span>
+                  <span className="font-bold text-2xl">
+                    {profile.credibility_score} <span className="text-gray-400 font-normal text-xs">/ 100</span>
+                  </span>
                 </div>
               </div>
+
+              {/* 任務清單元件 */}
               <MissionList agentId={profile.id} dict={dict} />
             </div>
           ))}
