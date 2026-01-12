@@ -49,6 +49,7 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setMsg('');
     try {
       if (isSignUp) {
         const { data, error } = await supabase.auth.signUp({ email, password });
@@ -61,6 +62,7 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         if (data.user) {
+          // 觸發狀態改變，引發 exit 動畫
           setUser(data.user);
           await fetchProfile(data.user.id);
         }
@@ -83,8 +85,7 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 text-black p-6 md:p-12 font-mono overflow-x-hidden">
-      {/* 標題固定不動 */}
+    <main className="min-h-screen bg-gray-50 text-black p-6 md:p-12 font-mono overflow-x-hidden perspective-1000">
       <div className="max-w-4xl mx-auto border-b-8 border-black pb-4 mb-12 flex justify-between items-end">
         <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">
           {dict.STVS?.title || "Sole Protocol"}
@@ -98,18 +99,18 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
 
       <AnimatePresence mode="wait">
         {!user ? (
-          /* --- 圖二：登入盒動畫 --- */
+          /* --- 圖二：登入盒 (退場時執行 180 度翻轉 + 放大) --- */
           <motion.div
-            key="login-box"
-            initial={{ opacity: 0, scale: 0.8, rotateY: -20 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+            key="login-view"
+            initial={{ opacity: 0, scale: 0.8, rotateX: 10 }}
+            animate={{ opacity: 1, scale: 1, rotateX: 0 }}
             exit={{ 
               opacity: 0, 
-              scale: 1.5, 
+              scale: 1.8, 
               rotateY: 180, // 倒轉效果
-              filter: "blur(10px)"
+              filter: "blur(20px)",
+              transition: { duration: 0.8, ease: "circIn" }
             }}
-            transition={{ duration: 0.6, ease: "backInOut" }}
             className="max-w-md mx-auto mt-20"
           >
             <div className="bg-white border-[6px] border-black p-8 shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative">
@@ -119,19 +120,19 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
               <form onSubmit={handleAuth} className="space-y-6 text-left">
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full border-4 border-black p-4 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" placeholder="AGENT EMAIL" required />
                 <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border-4 border-black p-4 font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]" placeholder="PASSCODE" required />
-                <button type="submit" className="w-full bg-black text-white font-black py-5 text-lg hover:bg-red-600 transition-all shadow-[8px_8px_0px_0px_rgba(0,0,0,0.3)] uppercase">
-                  {isSignUp ? "INITIALIZE" : "EXECUTE"}
+                <button type="submit" className="w-full bg-black text-white font-black py-5 text-lg hover:bg-red-600 transition-all shadow-[8px_8px_0px_0px_rgba(220,38,38,0.3)]">
+                  {isSignUp ? "INITIALIZE" : "EXECUTE LOGIN"}
                 </button>
               </form>
             </div>
           </motion.div>
         ) : (
-          /* --- 圖一：儀表板動畫 --- */
+          /* --- 圖一：主儀表板 (進場時由模糊變清晰並從遠處飛入) --- */
           <motion.div
-            key="dashboard"
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2, ease: "circOut" }}
+            key="dashboard-view"
+            initial={{ opacity: 0, scale: 0.5, filter: "blur(10px)" }}
+            animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+            transition={{ duration: 0.7, delay: 0.3, ease: "backOut" }}
             className="max-w-2xl mx-auto space-y-12"
           >
             {profiles.map((profile) => (
@@ -139,9 +140,9 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
                 <div className="bg-white border-4 border-black p-8 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)]">
                   <span className="bg-black text-white text-[10px] px-2 py-1 font-bold">AUTHORIZED OPERATIVE</span>
                   <h3 className="text-4xl font-black uppercase mt-6">{profile.full_name}</h3>
-                  <div className="mt-8 border-t-2 pt-4 flex justify-between">
+                  <div className="mt-8 border-t-2 pt-4 flex justify-between items-center">
                     <span className="italic text-sm">Credibility Score:</span>
-                    <span className="font-bold text-2xl">{profile.credibility_score}/100</span>
+                    <span className="font-bold text-2xl">{profile.credibility_score} <span className="text-xs text-gray-400">/ 100</span></span>
                   </div>
                 </div>
                 <MissionList agentId={profile.id} dict={dict} />
