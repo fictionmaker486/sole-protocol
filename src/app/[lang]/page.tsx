@@ -3,11 +3,13 @@
 import React, { useState, useEffect, use } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-// 下方路徑已根據您搬移後的結構校準
-import MissionList from '../../components/MissionList';
-import { supabase } from '../../../supabaseClient';
-import { getDictionary } from '../../../../lib/dictionary';
-import { Locale } from '../../../../lib/i18n-config';
+
+/* --- 這是為您目前檔案樹精確計算的路徑 --- */
+import MissionList from '../../components/MissionList'; // 跳兩層到 src/components
+/* --- 嘗試減少一層跳轉，看看紅線是否移動 --- */
+import { supabase } from '../../supabaseClient';    
+import { getDictionary } from '../../lib/dictionary'; 
+import { Locale } from '../../lib/i18n-config';
 
 export default function Home({ params }: { params: Promise<{ lang: Locale }> }) {
   const { lang } = use(params);
