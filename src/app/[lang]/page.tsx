@@ -3,10 +3,11 @@
 import React, { useState, useEffect, use } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import MissionList from '../components/MissionList';
-import { supabase } from '../supabaseClient';
-import { getDictionary } from '../../lib/dictionary';
-import { Locale } from '../../lib/i18n-config';
+// 下方路徑已根據您搬移後的結構校準
+import MissionList from '../../components/MissionList';
+import { supabase } from '../../../supabaseClient';
+import { getDictionary } from '../../../../lib/dictionary';
+import { Locale } from '../../../../lib/i18n-config';
 
 export default function Home({ params }: { params: Promise<{ lang: Locale }> }) {
   const { lang } = use(params);
@@ -87,7 +88,6 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
   return (
     <main className="min-h-screen bg-gray-50 text-black p-6 md:p-12 font-mono overflow-x-hidden">
       
-      {/* 頂部 Header 區域 */}
       <div className="max-w-4xl mx-auto border-b-8 border-black pb-4 mb-12 relative min-h-[140px] z-20">
         <div className="flex justify-between items-start">
           <div className="z-10">
@@ -102,7 +102,6 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
             </div>
           </div>
 
-          {/* 右上角 Logo 容器 */}
           <div className="w-32 md:w-56 flex justify-end">
             <AnimatePresence mode="wait">
               {!user ? (
@@ -129,7 +128,6 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
           </div>
         </div>
 
-        {/* 登出按鈕：確保僅在登入後顯示 */}
         {user && (
           <button 
             onClick={handleLogout} 
@@ -142,7 +140,6 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
 
       <AnimatePresence mode="wait">
         {!user ? (
-          /* 登入介面 (圖二) */
           <motion.div
             key="login-view"
             initial={{ opacity: 0, y: 20 }}
@@ -161,7 +158,6 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
             </div>
           </motion.div>
         ) : (
-          /* 儀表板介面 (圖一) */
           <motion.div
             key="dashboard-view"
             initial={{ opacity: 0, scale: 0.9 }}
