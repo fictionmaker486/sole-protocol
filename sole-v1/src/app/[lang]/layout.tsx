@@ -1,3 +1,4 @@
+import "../globals.css"; // 路徑必須正確指向你的 globals.css
 import { i18n } from "../../lib/i18n-config";
 
 // 讓 Next.js 預先生成支援的語系路徑

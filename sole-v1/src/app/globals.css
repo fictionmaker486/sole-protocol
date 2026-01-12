@@ -1,5 +1,8 @@
 @import "tailwindcss";
-
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* 你之前的自定義樣式可以寫在下面 */
 :root {
   --background: #ffffff;
   --foreground: #171717;
