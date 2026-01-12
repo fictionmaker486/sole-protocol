@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, use } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion'; // 導入動畫庫
+import { motion, AnimatePresence } from 'framer-motion';
 import MissionList from '../components/MissionList';
 import { supabase } from '../supabaseClient';
 import { getDictionary } from '../../lib/dictionary';
@@ -62,7 +62,6 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         if (data.user) {
-          // 觸發狀態改變，引發 exit 動畫
           setUser(data.user);
           await fetchProfile(data.user.id);
         }
@@ -81,25 +80,67 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
   };
 
   if (loading || !dict) {
-    return <div className="min-h-screen flex items-center justify-center font-mono bg-gray-50 text-black tracking-[0.5em]">INITIALIZING...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center font-mono uppercase tracking-widest bg-gray-50 text-black">
+        INITIALIZING...
+      </div>
+    );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 text-black p-6 md:p-12 font-mono overflow-x-hidden perspective-1000">
-      <div className="max-w-4xl mx-auto border-b-8 border-black pb-4 mb-12 flex justify-between items-end">
+    <main className="min-h-screen bg-gray-50 text-black p-6 md:p-12 font-mono overflow-x-hidden">
+      {/* 頂部標題區 - 包含語言切換與 LOGO 容器 */}
+      <div className="max-w-4xl mx-auto border-b-8 border-black pb-4 mb-12 flex justify-between items-end relative">
+        {/* 主要標題文字 */}
         <h1 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter">
           {dict.STVS?.title || "Sole Protocol"}
           <span className="text-xs bg-black text-white px-2 py-1 align-top ml-2 font-bold">v2.0</span>
         </h1>
-        <div className="flex gap-2 text-[10px] font-bold">
+        
+        {/* 語言切換按鈕 */}
+        <div className="flex gap-2 text-[10px] font-bold absolute top-0 right-0 mt-2 mr-2">
           <button onClick={() => switchLanguage('zh-TW')} className={`px-2 py-0.5 ${lang === 'zh-TW' ? 'bg-black text-white' : 'border border-black'}`}>ZH-TW</button>
           <button onClick={() => switchLanguage('en')} className={`px-2 py-0.5 ${lang === 'en' ? 'bg-black text-white' : 'border border-black'}`}>EN</button>
         </div>
+
+        {/* LOGO 圖片區域 - 登入前後會共用此位置並切換圖片 */}
+        <motion.div 
+          layoutId="main-logo" // 這是 Logo 共享元素的關鍵 ID
+          className="absolute top-0 right-0 mt-12 mr-2 flex items-center justify-end" // 調整這裡讓它初始位置在右上角
+        >
+          <AnimatePresence mode="wait">
+            {!user ? (
+              // 未登入時顯示 "SOLE" 文字 Logo
+              <motion.img
+                key="sole-text-logo"
+                src="/logo-sole-text.png" // 確保圖片路徑正確
+                alt="SOLE"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+                className="h-8 md:h-10 w-auto"
+              />
+            ) : (
+              // 登入後顯示 "S" 圖形 Logo
+              <motion.img
+                key="sole-s-logo"
+                src="/logo-s.png" // 確保圖片路徑正確
+                alt="S"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+                className="h-8 md:h-10 w-auto"
+              />
+            )}
+          </AnimatePresence>
+        </motion.div>
       </div>
 
       <AnimatePresence mode="wait">
         {!user ? (
-          /* --- 圖二：登入盒 (退場時執行 180 度翻轉 + 放大) --- */
+          /* --- 登入盒 --- */
           <motion.div
             key="login-view"
             initial={{ opacity: 0, scale: 0.8, rotateX: 10 }}
@@ -107,7 +148,7 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
             exit={{ 
               opacity: 0, 
               scale: 1.8, 
-              rotateY: 180, // 倒轉效果
+              rotateY: 180, 
               filter: "blur(20px)",
               transition: { duration: 0.8, ease: "circIn" }
             }}
@@ -127,7 +168,7 @@ export default function Home({ params }: { params: Promise<{ lang: Locale }> }) 
             </div>
           </motion.div>
         ) : (
-          /* --- 圖一：主儀表板 (進場時由模糊變清晰並從遠處飛入) --- */
+          /* --- 主儀表板 --- */
           <motion.div
             key="dashboard-view"
             initial={{ opacity: 0, scale: 0.5, filter: "blur(10px)" }}
