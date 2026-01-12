@@ -1,20 +1,59 @@
 'use client'
-import React from 'react'
-import Link from 'next/link' // 引入 Link
+import { useEffect, useState } from 'react'
+import { createClient } from '@/utils/supabase/client'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function Header() {
+  const [user, setUser] = useState<any>(null)
+  const supabase = createClient()
+  const router = useRouter()
+
+  useEffect(() => {
+    // 監聽身份狀態變化
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
+
   return (
-    <header className="w-full py-4 px-8 border-b border-zinc-800 bg-black/50 backdrop-blur-md fixed top-0 z-50 flex justify-between items-center text-white">
-      <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <img src="/logo-s.jpg" alt="Logo" className="w-8 h-8 rounded" />
-        <span className="font-bold tracking-tighter text-xl">SOLE</span>
-      </Link>
-      
-      <nav className="flex gap-6 text-sm text-zinc-400">
-        <Link href="/dashboard" className="hover:text-white transition-colors">儀表板</Link>
-        <Link href="/missions" className="hover:text-white transition-colors">任務檔案</Link>
-        <Link href="/settings" className="hover:text-white transition-colors">系統設定</Link>
-      </nav>
+    <header className="fixed top-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-zinc-800">
+      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <Link href="/" className="font-black italic text-xl tracking-tighter text-white">
+          SOLE <span className="text-blue-500">PROTOCOL</span>
+        </Link>
+
+        <nav className="flex items-center gap-6">
+          <Link href="/missions" className="text-xs font-mono text-zinc-400 hover:text-white transition-colors">
+            MISSIONS
+          </Link>
+          
+          {/* 動態顯示登出按鈕 */}
+          {user ? (
+            <button 
+              onClick={handleLogout}
+              className="text-[10px] font-mono bg-red-500/10 text-red-500 border border-red-500/20 px-3 py-1 rounded hover:bg-red-500 hover:text-white transition-all"
+            >
+              TERMINATE_SESSION
+            </button>
+          ) : (
+            <Link 
+              href="/login"
+              className="text-[10px] font-mono bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-all"
+            >
+              AUTHORIZE
+            </Link>
+          )}
+        </nav>
+      </div>
     </header>
   )
 }
