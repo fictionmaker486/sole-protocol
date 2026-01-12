@@ -1,0 +1,21 @@
+{
+  "STVS": {
+    "title": "SOLE 信任驗證系統",
+    "initializing": "初始化系統中...",
+    "auth_waiting": "等待身分驗證中...",
+    "login": "登入協議",
+    "signup": "註冊新特務",
+    "email": "特務信箱",
+    "password": "存取密碼",
+    "btn_login": "執行登入",
+    "btn_signup": "建立帳號",
+    "btn_logout": "中斷連線",
+    "switch_to_signup": "尚無權限？申請註冊",
+    "switch_to_login": "已有授權？返回登入",
+    "active_missions": "行動任務清單",
+    "no_missions": "目前無指派任務",
+    "mark_completed": "標記為任務已完成",
+    "loading_missions": "同步任務檔案中...",
+    "score_label": "信譽評分"
+  }
+}

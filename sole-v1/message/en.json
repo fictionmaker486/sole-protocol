@@ -1,0 +1,21 @@
+{
+  "STVS": {
+    "title": "SOLE PROTOCOL",
+    "initializing": "INITIALIZING...",
+    "auth_waiting": "WAITING FOR AUTHENTICATION...",
+    "login": "LOGIN PROTOCOL",
+    "signup": "REGISTER AGENT",
+    "email": "AGENT EMAIL",
+    "password": "ACCESS CODE",
+    "btn_login": "EXECUTE LOGIN",
+    "btn_signup": "CREATE ACCOUNT",
+    "btn_logout": "DISCONNECT",
+    "switch_to_signup": "NO ACCESS? APPLY FOR REGISTRATION",
+    "switch_to_login": "AUTHORIZED? BACK TO LOGIN",
+    "active_missions": "ACTIVE MISSIONS",
+    "no_missions": "NO MISSIONS ASSIGNED",
+    "mark_completed": "REPORT COMPLETED",
+    "loading_missions": "SYNCING MISSIONS...",
+    "score_label": "CREDIBILITY SCORE"
+  }
+}
