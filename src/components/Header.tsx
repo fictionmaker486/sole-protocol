@@ -36,7 +36,14 @@ export default function Header() {
           SOLE <span className="text-blue-500 font-bold">PROTOCOL</span>
         </Link>
 
-        <nav className="flex items-center gap-8">
+        <nav className="flex items-center gap-6 md:gap-8">
+          {/* Dashboard 連結 - 僅登入後顯示會更專業 */}
+          {user && (
+            <Link href="/dashboard" className="text-[10px] font-mono tracking-widest text-zinc-400 hover:text-blue-400 transition-all uppercase">
+              System_Dashboard
+            </Link>
+          )}
+
           <Link href="/missions" className="text-[10px] font-mono tracking-widest text-zinc-400 hover:text-white transition-all uppercase">
             Mission_Archives
           </Link>
