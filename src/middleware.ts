@@ -28,10 +28,11 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // 判斷當前路徑是否需要保護
+  // 判斷當前路徑是否需要保護 (新增了 /logs)
   const isProtectedRoute = request.nextUrl.pathname === '/' || 
                           request.nextUrl.pathname.startsWith('/missions') || 
-                          request.nextUrl.pathname.startsWith('/dashboard')
+                          request.nextUrl.pathname.startsWith('/dashboard') ||
+                          request.nextUrl.pathname.startsWith('/logs')
 
   // 如果使用者未登入且訪問保護路徑，則重導向
   if (!user && isProtectedRoute) {
@@ -39,13 +40,13 @@ export async function middleware(request: NextRequest) {
   }
 
   return response
-} // <--- 確保函數在這裡結束
+}
 
-// matcher 必須放在函數外面
 export const config = {
   matcher: [
-    '/',               // 保護首頁
-    '/missions/:path*', // 保護任務列表
-    '/dashboard/:path*', // 保護儀表板
+    '/',               
+    '/missions/:path*', 
+    '/dashboard/:path*', 
+    '/logs/:path*',    // 讓 Middleware 監控日誌頁面
   ],
 }

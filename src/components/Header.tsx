@@ -10,12 +10,10 @@ export default function Header() {
   const router = useRouter()
 
   useEffect(() => {
-    // 1. 初始化檢查當前用戶
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
     })
 
-    // 2. 監聽身份狀態的即時變化
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
     })
@@ -36,32 +34,35 @@ export default function Header() {
           SOLE <span className="text-blue-500 font-bold">PROTOCOL</span>
         </Link>
 
-        <nav className="flex items-center gap-6 md:gap-8">
-          {/* Dashboard 連結 - 僅登入後顯示會更專業 */}
+        <nav className="flex items-center gap-4 md:gap-8">
           {user && (
-            <Link href="/dashboard" className="text-[10px] font-mono tracking-widest text-zinc-400 hover:text-blue-400 transition-all uppercase">
-              System_Dashboard
-            </Link>
+            <>
+              <Link href="/dashboard" className="text-[10px] font-mono tracking-widest text-zinc-400 hover:text-blue-400 transition-all uppercase">
+                Dashboard
+              </Link>
+              <Link href="/logs" className="text-[10px] font-mono tracking-widest text-zinc-400 hover:text-blue-400 transition-all uppercase">
+                Audit_Logs
+              </Link>
+            </>
           )}
 
           <Link href="/missions" className="text-[10px] font-mono tracking-widest text-zinc-400 hover:text-white transition-all uppercase">
-            Mission_Archives
+            Missions
           </Link>
           
-          {/* 根據 user 狀態動態顯示按鈕 */}
           {user ? (
             <button 
               onClick={handleLogout}
               className="text-[9px] font-black font-mono bg-red-500/10 text-red-500 border border-red-500/20 px-3 py-1.5 rounded uppercase hover:bg-red-500 hover:text-white transition-all tracking-tighter"
             >
-              Terminate_Session
+              Terminate
             </button>
           ) : (
             <Link 
               href="/login"
               className="text-[9px] font-black font-mono bg-blue-600 text-white px-4 py-1.5 rounded uppercase hover:bg-blue-700 transition-all tracking-tighter"
             >
-              Authorize_Access
+              Authorize
             </Link>
           )}
         </nav>
