@@ -13,17 +13,33 @@ export default function CreateMissionModal({ onMissionCreated }: { onMissionCrea
     setLoading(true)
     const supabase = createClient()
 
+    // 1. 獲取當前登入的使用者資訊
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      alert('請先登入特工帳號')
+      setLoading(false)
+      return
+    }
+
+    // 2. 寫入任務，並帶入 agent_id
     const { error } = await supabase
       .from('missions')
-      .insert([{ title, description }])
+      .insert([
+        { 
+          title, 
+          description, 
+          agent_id: user.id // <--- 關鍵修正：將任務關聯到當前特工
+        }
+      ])
 
     if (error) {
-      alert('上傳失敗: ' + error.message)
+      alert('部署失敗: ' + error.message)
     } else {
       setTitle('')
       setDescription('')
       setIsOpen(false)
-      onMissionCreated() // 成功後通知父組件重新整理列表
+      onMissionCreated() // 通知列表刷新
     }
     setLoading(false)
   }
@@ -40,13 +56,13 @@ export default function CreateMissionModal({ onMissionCreated }: { onMissionCrea
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
       <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-2xl w-full max-w-md shadow-2xl animate-in zoom-in duration-300">
-        <h2 className="text-2xl font-black italic mb-6 text-blue-400">NEW MISSION DATA</h2>
+        <h2 className="text-2xl font-black italic mb-6 text-blue-400 uppercase tracking-tighter">New Mission Data</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs text-zinc-500 uppercase mb-2">任務代號</label>
             <input 
               required
-              className="w-full bg-black border border-zinc-800 p-3 rounded-lg focus:border-blue-500 outline-none transition-colors"
+              className="w-full bg-black border border-zinc-800 p-3 rounded-lg focus:border-blue-500 outline-none transition-colors text-white"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="輸入任務名稱..."
@@ -55,7 +71,7 @@ export default function CreateMissionModal({ onMissionCreated }: { onMissionCrea
           <div>
             <label className="block text-xs text-zinc-500 uppercase mb-2">任務簡報</label>
             <textarea 
-              className="w-full bg-black border border-zinc-800 p-3 rounded-lg focus:border-blue-500 outline-none h-24 transition-colors"
+              className="w-full bg-black border border-zinc-800 p-3 rounded-lg focus:border-blue-500 outline-none h-24 transition-colors text-white"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="輸入任務細節..."
@@ -65,14 +81,14 @@ export default function CreateMissionModal({ onMissionCreated }: { onMissionCrea
             <button 
               type="button"
               onClick={() => setIsOpen(false)}
-              className="flex-1 px-4 py-2 border border-zinc-800 hover:bg-zinc-800 rounded-lg transition-colors"
+              className="flex-1 px-4 py-2 border border-zinc-800 hover:bg-zinc-800 rounded-lg transition-colors text-zinc-400"
             >
               取消
             </button>
             <button 
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg font-bold transition-colors"
+              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 rounded-lg font-bold transition-colors text-white"
             >
               {loading ? '寫入中...' : '確認部署'}
             </button>

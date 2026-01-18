@@ -13,23 +13,35 @@ export default function MissionList() {
   // 1. 自動寫入活動紀錄 (Logs) 到 Supabase
   const logEvent = async (type: string, details: string, missionId?: string) => {
     if (!user) return
+    
+    // 根據 image_6ce46c.png 確認欄位名為 agent_email, event_type, mission_id, details
     const { error } = await supabase.from('logs').insert([{
       agent_email: user.email,
       event_type: type,
       mission_id: missionId,
       details: details
     }])
-    if (error) console.error('日誌寫入失敗:', error.message)
+    
+    if (error) {
+      console.error('日誌寫入失敗:', error.message)
+    } else {
+      console.log('日誌寫入成功')
+    }
   }
 
   // 2. 抓取任務資料
   const fetchMissions = async () => {
     setLoading(true)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('missions')
       .select('*')
       .order('created_at', { ascending: false })
-    if (data) setMissions(data)
+    
+    if (error) {
+      console.error('抓取任務失敗:', error.message)
+    } else if (data) {
+      setMissions(data)
+    }
     setLoading(false)
   }
 
@@ -44,36 +56,40 @@ export default function MissionList() {
   // 4. 切換任務狀態 (Update) 並記錄日誌
   const toggleStatus = async (id: string, currentStatus: string) => {
     const newStatus = currentStatus === 'completed' ? 'pending' : 'completed'
+    
+    // 執行更新
     const { error } = await supabase
       .from('missions')
       .update({ status: newStatus })
       .eq('id', id)
 
     if (!error) {
-      // 更新本地狀態讓 UI 立即反應
+      // 本地狀態更新以提供即時反饋
       setMissions(missions.map(m => m.id === id ? { ...m, status: newStatus } : m))
       
       // 觸發日誌紀錄
       await logEvent('STATUS_UPDATED', `變更狀態為 ${newStatus}`, id)
       
-      // 【關鍵修正】強制重新整理路由數據，確保快取失效
+      // 強制刷新以同步 Dashboard 數據
       router.refresh()
     } else {
-      console.error('更新失敗:', error.message)
+      alert('更新失敗，請檢查權限設定 (RLS)。')
+      console.error(error.message)
     }
   }
 
   // 5. 刪除任務 (Delete) 並記錄日誌
   const handleDelete = async (id: string) => {
     if (!confirm('CONFIRM DELETION: 確定要銷毀此任務檔案嗎？')) return
+    
     const { error } = await supabase.from('missions').delete().eq('id', id)
+    
     if (!error) {
       setMissions(missions.filter(m => m.id !== id))
-      // 觸發日誌紀錄
       await logEvent('MISSION_DELETED', `永久刪除任務節點`, id)
-      
-      // 同樣執行 refresh 確保伺服器端同步
       router.refresh()
+    } else {
+      alert('刪除失敗：' + error.message)
     }
   }
 
@@ -84,7 +100,7 @@ export default function MissionList() {
     router.refresh()
   }
 
-  if (loading) return <p className="text-zinc-500 italic text-center py-10 font-mono">SYNCHRONIZING DATA...</p>
+  if (loading) return <p className="text-zinc-500 italic text-center py-10 font-mono animate-pulse">SYNCHRONIZING_ENCRYPTED_DATA...</p>
 
   return (
     <div className="w-full mt-6 space-y-4">
@@ -95,15 +111,15 @@ export default function MissionList() {
           <p className="text-[10px] text-blue-500/60 font-mono">AGENT_ID: {user?.email || 'OFFLINE'}</p>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-[10px] font-mono text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded">
+          <span className="text-[10px] font-mono text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
             {missions.length} NODES FOUND
           </span>
           {user && (
             <button 
               onClick={handleLogout}
-              className="text-[10px] border border-red-900/40 text-red-500/70 px-3 py-1 rounded hover:bg-red-500/20 transition-all font-mono"
+              className="text-[10px] border border-red-900/40 text-red-500/70 px-3 py-1 rounded hover:bg-red-500 hover:text-white transition-all font-mono uppercase tracking-tighter"
             >
-              TERMINATE
+              Terminate
             </button>
           )}
         </div>
@@ -112,14 +128,14 @@ export default function MissionList() {
       {/* 任務列表渲染 */}
       {missions.length === 0 ? (
         <div className="text-center py-20 border border-dashed border-zinc-800 rounded-2xl">
-          <p className="text-zinc-600 font-mono text-sm tracking-widest">NO ACTIVE NODES</p>
+          <p className="text-zinc-600 font-mono text-sm tracking-widest uppercase opacity-50">No active nodes in this sector</p>
         </div>
       ) : (
         missions.map((m) => (
           <div 
             key={m.id} 
-            className={`group p-5 bg-zinc-900/40 rounded-xl border transition-all duration-300 flex justify-between items-center ${
-              m.status === 'completed' ? 'border-zinc-900 opacity-50 shadow-none' : 'border-zinc-800 hover:border-zinc-600 shadow-xl'
+            className={`group p-5 bg-zinc-900/30 rounded-xl border transition-all duration-300 flex justify-between items-center backdrop-blur-sm ${
+              m.status === 'completed' ? 'border-zinc-900/50 opacity-40' : 'border-zinc-800 hover:border-blue-500/30 shadow-2xl shadow-blue-500/5'
             }`}
           >
             <div className="flex items-center gap-5">
@@ -127,8 +143,8 @@ export default function MissionList() {
                 onClick={() => toggleStatus(m.id, m.status)}
                 className={`w-24 py-1.5 rounded-md text-[9px] font-black uppercase tracking-tighter transition-all border ${
                   m.status === 'completed' 
-                  ? 'bg-green-500/10 text-green-500 border-green-500/40' 
-                  : 'bg-blue-600/20 text-blue-400 border-blue-500/40 hover:bg-blue-600/40'
+                  ? 'bg-green-500/10 text-green-500 border-green-500/30 cursor-default' 
+                  : 'bg-blue-600/10 text-blue-400 border-blue-500/30 hover:bg-blue-600/20 hover:text-blue-300'
                 }`}
               >
                 {m.status === 'completed' ? 'COMPLETED' : 'PROCESSING'}
@@ -136,12 +152,12 @@ export default function MissionList() {
               
               <div>
                 <h3 className={`font-bold tracking-tight text-lg transition-all ${
-                  m.status === 'completed' ? 'text-zinc-600 line-through' : 'text-blue-100'
+                  m.status === 'completed' ? 'text-zinc-600 line-through' : 'text-zinc-100'
                 }`}>
                   {m.title}
                 </h3>
-                <p className="text-sm text-zinc-500 mt-0.5 font-light">
-                  {m.description || 'No detailed data.'}
+                <p className="text-xs text-zinc-500 mt-1 font-mono tracking-tight uppercase opacity-80">
+                  {m.description || 'No supplementary data found.'}
                 </p>
               </div>
             </div>
@@ -150,9 +166,10 @@ export default function MissionList() {
             {user && (
               <button 
                 onClick={() => handleDelete(m.id)}
-                className="opacity-0 group-hover:opacity-100 p-2 text-zinc-600 hover:text-red-500 transition-all"
+                className="opacity-0 group-hover:opacity-100 p-2 text-zinc-700 hover:text-red-500 transition-all duration-200"
+                title="Destroy Mission Node"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </button>
