@@ -50,9 +50,16 @@ export default function MissionList() {
       .eq('id', id)
 
     if (!error) {
+      // 更新本地狀態讓 UI 立即反應
       setMissions(missions.map(m => m.id === id ? { ...m, status: newStatus } : m))
+      
       // 觸發日誌紀錄
       await logEvent('STATUS_UPDATED', `變更狀態為 ${newStatus}`, id)
+      
+      // 【關鍵修正】強制重新整理路由數據，確保快取失效
+      router.refresh()
+    } else {
+      console.error('更新失敗:', error.message)
     }
   }
 
@@ -64,6 +71,9 @@ export default function MissionList() {
       setMissions(missions.filter(m => m.id !== id))
       // 觸發日誌紀錄
       await logEvent('MISSION_DELETED', `永久刪除任務節點`, id)
+      
+      // 同樣執行 refresh 確保伺服器端同步
+      router.refresh()
     }
   }
 
