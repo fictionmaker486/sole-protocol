@@ -28,22 +28,24 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // 權限保護邏輯：
-  // 如果使用者未登入，且試圖進入 /missions 或 /dashboard
-  const isProtectedRoute = request.nextUrl.pathname.startsWith('/missions') || 
+  // 判斷當前路徑是否需要保護
+  const isProtectedRoute = request.nextUrl.pathname === '/' || 
+                          request.nextUrl.pathname.startsWith('/missions') || 
                           request.nextUrl.pathname.startsWith('/dashboard')
 
+  // 如果使用者未登入且訪問保護路徑，則重導向
   if (!user && isProtectedRoute) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   return response
-}
+} // <--- 確保函數在這裡結束
 
-// 設定 Middleware 執行的範圍
+// matcher 必須放在函數外面
 export const config = {
   matcher: [
-    '/missions/:path*',
-    '/dashboard/:path*',
+    '/',               // 保護首頁
+    '/missions/:path*', // 保護任務列表
+    '/dashboard/:path*', // 保護儀表板
   ],
 }
