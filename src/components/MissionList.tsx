@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
-// 導入我們剛剛寫好的側邊滑出彈窗
+// 導入側邊滑出彈窗
 import SubmitProofModal from './modals/SubmitProofModal'
 
 // 定義符合 Sole 憲法的任務結構
@@ -10,8 +10,7 @@ interface Mission {
   id: string
   title: string
   description: string
-  status: 'pending' | 'completed'
-  // STVS 核心欄位
+  status: 'pending' | 'completed' | 'verifying'
   trustStatus: 'CORE' | 'DEVIATION' | 'RE_VALIDATION'
   successStreak: number
 }
@@ -21,7 +20,6 @@ export default function MissionList() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
   
-  // 聯動狀態管理 (管理側邊欄開關與選中的任務)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedMission, setSelectedMission] = useState<Mission | null>(null)
 
@@ -56,12 +54,19 @@ export default function MissionList() {
     supabase.auth.getUser().then(({ data }) => setUser(data.user))
   }, [])
 
-  // 觸發聯動邏輯：開啟側邊欄並記錄選中的任務
+  // 處理驗證請求：加入身分檢查與狀態檢查
   const handleVerifyRequest = (mission: Mission) => {
-    if (mission.status === 'completed') return // 已完成則不觸發
-    setSelectedMission(mission)
-    setIsModalOpen(true)
-  }
+    if (mission.status === 'completed') return;
+
+    // 💡 彈出提醒：若使用者未登入，阻斷後續動作
+    if (!user) {
+      alert('身分未驗證：請先登入 Agent 帳號以進行行為存證。🛡️');
+      return;
+    }
+
+    setSelectedMission(mission);
+    setIsModalOpen(true);
+  };
 
   const handleDelete = async (id: string) => {
     if (!confirm('CONFIRM_DELETION: 確定要銷毀此任務檔案嗎？')) return
@@ -77,7 +82,7 @@ export default function MissionList() {
 
   return (
     <div className="w-full mt-6 space-y-4 font-sans text-zinc-100">
-      {/* 去噪後的 Header */}
+      {/* Header */}
       <div className="flex justify-between items-end mb-8 px-1 border-b border-zinc-800 pb-4">
         <div className="space-y-1">
           <h2 className="text-[10px] font-bold tracking-[0.3em] text-zinc-500 uppercase">Archive System v1.3</h2>
@@ -101,13 +106,15 @@ export default function MissionList() {
             }`}
           >
             <div className="flex items-center gap-6">
-              {/* 修改後的狀態按鈕：傳入整個 mission 物件 */}
+              {/* 💡 修改後的按鈕：嵌套三元運算子處理三種狀態視覺 */}
               <button 
                 onClick={() => handleVerifyRequest(m)}
                 className={`w-28 py-2 text-[9px] font-mono font-bold border transition-all ${
                   m.status === 'completed' 
-                  ? 'border-zinc-800 text-zinc-600 cursor-not-allowed' 
-                  : 'border-zinc-700 text-zinc-400 hover:bg-white hover:text-black'
+                    ? 'border-zinc-800 text-zinc-600 cursor-not-allowed' // 1. 已完成
+                    : !user 
+                      ? 'border-zinc-800 text-zinc-700 hover:border-zinc-600' // 2. 未登入 (變暗)
+                      : 'border-zinc-700 text-zinc-400 hover:bg-white hover:text-black' // 3. 正常操作
                 }`}
               >
                 {m.status === 'completed' ? 'VERIFIED' : 'SUBMIT_PROOF'}
@@ -116,7 +123,7 @@ export default function MissionList() {
               <div className="space-y-1">
                 <h3 className={`text-sm tracking-tight ${m.status === "completed" ? "text-zinc-600 line-through" : "text-zinc-100"}`}>
                   {m.title}
-                  {m.trustStatus === 'RE_VALIDATION' && (
+                  {(m.trustStatus === 'RE_VALIDATION' || m.status === 'pending') && (
                     <span className="ml-3 text-[10px] font-mono text-zinc-500 animate-pulse">
                       [{m.successStreak}/3]
                     </span>
@@ -142,16 +149,15 @@ export default function MissionList() {
         ))
       )}
 
-      {/* 聯動組件：掛載於渲染樹外層 */}
-     <SubmitProofModal 
-  isOpen={isModalOpen}
-  onClose={() => setIsModalOpen(false)}
-  missionTitle={selectedMission?.title || "UNKNOWN_MISSION"}
-  // 💡 我們要在這裡補上這兩行：
-  missionId={selectedMission?.id || ""}
-  userEmail={user?.email || ""}
-  successStreak={selectedMission?.successStreak || 1}
-/>
+      {/* 聯動組件 */}
+      <SubmitProofModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        missionTitle={selectedMission?.title || "UNKNOWN_MISSION"}
+        missionId={selectedMission?.id || ""}
+        userEmail={user?.email || ""}
+        successStreak={selectedMission?.successStreak || 1}
+      />
     </div>
   )
 }
